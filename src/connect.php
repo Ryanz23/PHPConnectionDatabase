@@ -10,14 +10,25 @@ try {
   // set the PDO error mode to exception
   $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-  $sql = "INSERT INTO `akademik` (`name`, `prodi`, `nim`) VALUES ('Mizz', 'TI', '123')";
-  // untuk mengeksekusi query
-  $result = $conn->exec($sql);
+  if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['name']) && isset($_POST['date']) && isset($_POST['prodi']) && isset($_POST['nim'])) {
+      $name = $_POST['name'];
+      $date_of_birth = $_POST['date'];
+      $prodi = $_POST['prodi'];
+      $nim = $_POST['nim'];
 
-  if ($result) {
-    echo "New record created successfully";
-  } else {
-    echo "failed insert to db";
+      // format date
+      $date = new DateTimeImmutable($date_of_birth);
+      $date_formated = $date->format("Y-m-d");
+
+      $sql = "INSERT INTO akademik (name, date_of_birth, prodi, nim) VALUES (?, ?, ?, ?)";
+
+      $pdo_statement = $conn->prepare($sql);
+      // mengeksekusi sql prepare statement
+      $pdo_statement->execute([$name, $date_formated, $prodi, $nim]);
+
+      header("Location: /");
+    }
   }
 } catch (PDOException $e) {
   echo "Connection failed: " . $e->getMessage();
